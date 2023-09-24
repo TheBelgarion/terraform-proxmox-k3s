@@ -54,7 +54,7 @@ resource "proxmox_vm_qemu" "k3s-worker" {
   sockets = each.value.sockets
   memory  = each.value.memory
 
-  agent = 1
+  agent  = 1
   onboot = var.onboot
   scsihw = var.scsihw
 
@@ -80,17 +80,16 @@ resource "proxmox_vm_qemu" "k3s-worker" {
       ciuser,
       ssh_private_key,
       disk,
+      tags,
       network
     ]
   }
 
   os_type = "cloud-init"
 
-  ciuser = each.value.user
-
+  ciuser    = each.value.user
+  sshkeys   = file(var.ssh_key_files.publ)
   ipconfig0 = "ip=${each.value.ip}/${local.lan_subnet_cidr_bitnum},gw=${var.network_gateway}"
-
-  ssh_private_key = file(var.private_key)
 
   nameserver = var.nameserver
 
@@ -98,7 +97,7 @@ resource "proxmox_vm_qemu" "k3s-worker" {
     type        = "ssh"
     user        = each.value.user
     host        = each.value.ip
-    private_key = file(var.private_key)
+    private_key = file(var.ssh_key_files.priv)
   }
 
   provisioner "remote-exec" {
@@ -112,7 +111,7 @@ resource "proxmox_vm_qemu" "k3s-worker" {
         node_taints  = each.value.taints
         datastores   = []
 
-        http_proxy  = var.http_proxy
+        http_proxy = var.http_proxy
       })
     ]
   }

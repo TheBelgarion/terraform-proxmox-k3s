@@ -4,7 +4,7 @@ resource "macaddress" "k3s-masters" {
 
 locals {
   master_node_settings = var.master_node_settings
-  master_node_ips = [for i in range(var.master_nodes_count) : cidrhost(var.control_plane_subnet, i + 1)]
+  master_node_ips      = [for i in range(var.master_nodes_count) : cidrhost(var.control_plane_subnet, i + 1)]
 }
 
 resource "random_password" "k3s-server-token" {
@@ -24,7 +24,7 @@ resource "proxmox_vm_qemu" "k3s-master" {
 
   clone = var.node_template
 
-  pool = var.proxmox_resource_pool
+  pool   = var.proxmox_resource_pool
   scsihw = var.scsihw
 
   # cores = 2
@@ -32,7 +32,7 @@ resource "proxmox_vm_qemu" "k3s-master" {
   sockets = local.master_node_settings.sockets
   memory  = local.master_node_settings.memory
 
-  agent = 1
+  agent  = 1
   onboot = var.onboot
 
   disk {
@@ -53,21 +53,21 @@ resource "proxmox_vm_qemu" "k3s-master" {
   }
 
   lifecycle {
-    ignore_changes       = [
+    ignore_changes = [
       ciuser,
       ssh_private_key,
       disk,
+      tags,
       network
     ]
   }
 
   os_type = "cloud-init"
 
-  ciuser = local.master_node_settings.user
+  ciuser  = local.master_node_settings.user
+  sshkeys = file(var.ssh_key_files.publ)
 
   ipconfig0 = "ip=${local.master_node_ips[count.index]}/${local.lan_subnet_cidr_bitnum},gw=${var.network_gateway}"
-
-  ssh_private_key = file(var.private_key)
 
   nameserver = var.nameserver
 
@@ -75,7 +75,7 @@ resource "proxmox_vm_qemu" "k3s-master" {
     type        = "ssh"
     user        = local.master_node_settings.user
     host        = local.master_node_ips[count.index]
-    private_key = file(var.private_key)
+    private_key = file(var.ssh_key_files.priv)
   }
 
   provisioner "remote-exec" {
@@ -87,7 +87,7 @@ resource "proxmox_vm_qemu" "k3s-master" {
         server_hosts = []
         node_taints  = ["CriticalAddonsOnly=true:NoExecute"]
         disable      = var.k3s_disable_components
-        datastores   = [
+        datastores = [
           {
             host     = "${local.support_node_ip}:3306"
             name     = "k3s"
@@ -111,6 +111,7 @@ data "external" "kubeconfig" {
     "/usr/bin/ssh",
     "-o UserKnownHostsFile=/dev/null",
     "-o StrictHostKeyChecking=no",
+    "-i ${var.ssh_key_files.priv}",
     "${local.master_node_settings.user}@${local.master_node_ips[0]}",
     "echo '{\"kubeconfig\":\"'$(sudo cat /etc/rancher/k3s/k3s.yaml | base64)'\"}'"
   ]

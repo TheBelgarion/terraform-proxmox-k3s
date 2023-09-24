@@ -9,10 +9,12 @@ variable "proxmox_node" {
   type        = string
 }
 
-variable "private_key" {
-  description = "Path to file containing private SSH key for remoting into nodes. The corresponding public key must be found in private_key."
-  type        = string
-  default     = "~/.ssh/id_rsa"
+variable "ssh_key_files" {
+  description = "full filename of key files"
+  type = object({
+    publ = string,
+    priv = string
+  })
 }
 
 variable "network_gateway" {
@@ -68,9 +70,9 @@ variable "proxmox_resource_pool" {
 }
 
 variable "onboot" {
-  type = bool
+  type        = bool
   description = "Whether to have the cluster startup after the PVE node starts."
-  default = true
+  default     = true
 }
 
 variable "support_node_settings" {
@@ -85,8 +87,7 @@ variable "support_node_settings" {
     db_name        = optional(string, "k3s"),
     db_user        = optional(string, "k3s"),
     network_bridge = optional(string, "vmbr0"),
-    network_tag    = optional(number, -1),
-  })
+  network_tag = optional(number, -1), })
 }
 
 variable "master_nodes_count" {
@@ -111,7 +112,7 @@ variable "master_node_settings" {
 
 variable "node_pools" {
   description = "Node pool definitions for the cluster."
-  type        = list(object({
+  type = list(object({
 
     name   = string,
     size   = number,
