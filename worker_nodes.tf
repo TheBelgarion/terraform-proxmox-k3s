@@ -21,6 +21,7 @@ locals {
         template       = coalesce(pool.template, var.node_template)
         network_bridge = pool.network_bridge
         network_tag    = pool.network_tag
+        tags           = pool.tags
         }, {
         i  = i
         ip = cidrhost(pool.subnet, i)

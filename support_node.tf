@@ -28,7 +28,7 @@ resource "proxmox_vm_qemu" "k3s-support" {
   agent  = 1
   onboot = var.onboot
   scsihw = var.scsihw
-  tags   = local.master_node_settings.tags
+  tags   = local.support_node_settings.tags
 
   disk {
     type    = local.support_node_settings.storage_type
