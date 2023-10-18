@@ -124,6 +124,7 @@ resource "terraform_data" "kubeconfig" {
   }
   depends_on = [
     proxmox_vm_qemu.k3s-support,
-    proxmox_vm_qemu.k3s-master
+    proxmox_vm_qemu.k3s-master,
+    proxmox_vm_qemu.k3s-worker,
   ]
 }
