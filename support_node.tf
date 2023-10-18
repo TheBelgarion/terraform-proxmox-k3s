@@ -14,6 +14,8 @@ resource "proxmox_vm_qemu" "k3s-support" {
   target_node = var.proxmox_node
   name        = join("-", [var.cluster_name, "support"])
 
+  automatic_reboot = true
+
   clone = var.node_template
 
   pool = var.proxmox_resource_pool
@@ -26,6 +28,7 @@ resource "proxmox_vm_qemu" "k3s-support" {
   agent  = 1
   onboot = var.onboot
   scsihw = var.scsihw
+  tags   = local.master_node_settings.tags
 
   disk {
     type    = local.support_node_settings.storage_type

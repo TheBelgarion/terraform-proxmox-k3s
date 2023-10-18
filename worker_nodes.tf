@@ -42,6 +42,8 @@ resource "proxmox_vm_qemu" "k3s-worker" {
 
   for_each = local.mapped_worker_nodes
 
+  automatic_reboot = true
+
   target_node = var.proxmox_node
   name        = "${var.cluster_name}-${each.key}"
 
@@ -57,6 +59,7 @@ resource "proxmox_vm_qemu" "k3s-worker" {
   agent  = 1
   onboot = var.onboot
   scsihw = var.scsihw
+  tags   = each.value.tags
 
   disk {
     type    = each.value.storage_type

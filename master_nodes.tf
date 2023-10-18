@@ -18,6 +18,8 @@ resource "proxmox_vm_qemu" "k3s-master" {
     proxmox_vm_qemu.k3s-support,
   ]
 
+  automatic_reboot = true
+
   count       = var.master_nodes_count
   target_node = var.proxmox_node
   name        = "${var.cluster_name}-master-${count.index}"
@@ -26,6 +28,7 @@ resource "proxmox_vm_qemu" "k3s-master" {
 
   pool   = var.proxmox_resource_pool
   scsihw = var.scsihw
+  tags   = local.master_node_settings.tags
 
   # cores = 2
   cores   = local.master_node_settings.cores
@@ -101,18 +104,26 @@ resource "proxmox_vm_qemu" "k3s-master" {
   }
 }
 
-data "external" "kubeconfig" {
+resource "terraform_data" "kubeconfig" {
+  provisioner "remote-exec" {
+    inline = [
+      "sudo cp --no-preserve=ownership /etc/rancher/k3s/k3s.yaml ~/${var.kube_config_file}",
+      "sudo chown ${local.master_node_settings.user} ${var.kube_config_file}",
+      "sed -i -r 's/127.0.0.1:6443/${local.support_node_ip}:6443/gi' ~/${var.kube_config_file}"
+    ]
+    connection {
+      type        = "ssh"
+      user        = local.master_node_settings.user
+      private_key = file(var.ssh_key_files.priv)
+      host        = local.master_node_ips[0]
+      timeout     = "10s"
+    }
+  }
+  provisioner "local-exec" {
+    command = "scp -i ${var.ssh_key_files.priv} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${local.master_node_settings.user}@${local.master_node_ips[0]}:~/${var.kube_config_file} ${var.kube_config_file}"
+  }
   depends_on = [
     proxmox_vm_qemu.k3s-support,
     proxmox_vm_qemu.k3s-master
-  ]
-
-  program = [
-    "/usr/bin/ssh",
-    "-o UserKnownHostsFile=/dev/null",
-    "-o StrictHostKeyChecking=no",
-    "-i ${var.ssh_key_files.priv}",
-    "${local.master_node_settings.user}@${local.master_node_ips[0]}",
-    "echo '{\"kubeconfig\":\"'$(sudo cat /etc/rancher/k3s/k3s.yaml | base64)'\"}'"
   ]
 }

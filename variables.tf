@@ -87,7 +87,9 @@ variable "support_node_settings" {
     db_name        = optional(string, "k3s"),
     db_user        = optional(string, "k3s"),
     network_bridge = optional(string, "vmbr0"),
-  network_tag = optional(number, -1), })
+    network_tag    = optional(number, -1),
+    tags           = optional(string, "k3s-support"),
+  })
 }
 
 variable "master_nodes_count" {
@@ -107,6 +109,7 @@ variable "master_node_settings" {
     user           = optional(string, "k3s"),
     network_bridge = optional(string, "vmbr0"),
     network_tag    = optional(number, -1),
+    tags           = optional(string, "k3s-master"),
   })
 }
 
@@ -128,6 +131,7 @@ variable "node_pools" {
     disk_size    = optional(string, "20G"),
     user         = optional(string, "k3s"),
     network_tag  = optional(number, -1),
+    tags         = optional(string, "k3s-node-pool"),
 
     template = optional(string),
 
@@ -157,4 +161,10 @@ variable "nameserver" {
   default     = ""
   type        = string
   description = "nameserver"
+}
+
+variable "kube_config_file" {
+  default     = ""
+  type        = string
+  description = "file to store kubeconfig in"
 }
