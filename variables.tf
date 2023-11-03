@@ -89,6 +89,7 @@ variable "support_node_settings" {
     network_bridge = optional(string, "vmbr0"),
     network_tag    = optional(number, -1),
     tags           = optional(string, "k3s-support"),
+    vmid           = optional(number, 0),
   })
 }
 
@@ -110,6 +111,7 @@ variable "master_node_settings" {
     network_bridge = optional(string, "vmbr0"),
     network_tag    = optional(number, -1),
     tags           = optional(string, "k3s-master"),
+    vmid           = optional(number, 0),
   })
 }
 
@@ -132,6 +134,7 @@ variable "node_pools" {
     user         = optional(string, "k3s"),
     network_tag  = optional(number, -1),
     tags         = optional(string, "k3s-node-pool"),
+    vmid         = optional(number, 0),
 
     template = optional(string),
 

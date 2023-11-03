@@ -26,6 +26,7 @@ resource "proxmox_vm_qemu" "k3s-support" {
   memory  = local.support_node_settings.memory
 
   agent  = 1
+  vmid   = local.support_node_settings.vmid
   onboot = var.onboot
   scsihw = var.scsihw
   tags   = local.support_node_settings.tags

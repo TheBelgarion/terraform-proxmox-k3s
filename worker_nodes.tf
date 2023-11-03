@@ -22,6 +22,7 @@ locals {
         network_bridge = pool.network_bridge
         network_tag    = pool.network_tag
         tags           = pool.tags
+        vmid           = pool.vmid + i
         }, {
         i  = i
         ip = cidrhost(pool.subnet, i)
@@ -48,6 +49,7 @@ resource "proxmox_vm_qemu" "k3s-worker" {
   target_node = var.proxmox_node
   name        = "${var.cluster_name}-${each.key}"
 
+  vmid  = each.value.vmid
   clone = each.value.template
 
   pool = var.proxmox_resource_pool

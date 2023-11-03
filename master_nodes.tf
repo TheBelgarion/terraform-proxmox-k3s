@@ -30,6 +30,8 @@ resource "proxmox_vm_qemu" "k3s-master" {
   scsihw = var.scsihw
   tags   = local.master_node_settings.tags
 
+  vmid = local.master_node_settings.vmid + count.index
+
   # cores = 2
   cores   = local.master_node_settings.cores
   sockets = local.master_node_settings.sockets
